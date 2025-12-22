@@ -8,11 +8,9 @@ namespace WebApiAdvance.DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<Brand> builder)
         {
-
             builder.Property(b => b.Name)
                 .IsRequired()
                 .HasMaxLength(200);
-
             builder.Property(b => b.Description)
                 .HasMaxLength(300)
                 .HasDefaultValue("fgdskjda  fsabfkjsa");

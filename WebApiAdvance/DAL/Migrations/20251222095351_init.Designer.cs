@@ -12,7 +12,7 @@ using WebApiAdvance.DAL.EFCore;
 namespace WebApiAdvance.DAL.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20251219100532_init")]
+    [Migration("20251222095351_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -36,11 +36,15 @@ namespace WebApiAdvance.DAL.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasDefaultValue("fgdskjda  fsabfkjsa");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -71,7 +75,9 @@ namespace WebApiAdvance.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
