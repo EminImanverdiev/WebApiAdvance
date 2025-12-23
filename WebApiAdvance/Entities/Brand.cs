@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using WebApiAdvance.Entities.Common;
+﻿using WebApiAdvance.Entities.Common;
 
 namespace WebApiAdvance.Entities;
 
