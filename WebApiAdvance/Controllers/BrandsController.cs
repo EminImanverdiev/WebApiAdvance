@@ -15,7 +15,6 @@ namespace WebApiAdvance.Controllers
     {
         private readonly ApiDbContext _context;
         IMapper _mapper;
-
         public BrandsController(ApiDbContext context, IMapper mapper)
         {
             _context = context;
@@ -30,7 +29,6 @@ namespace WebApiAdvance.Controllers
 
             return StatusCode((int)HttpStatusCode.OK, result);
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateBrand(CreateBrandDto dto)
         {
@@ -50,14 +48,12 @@ namespace WebApiAdvance.Controllers
                 brand.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
                 return Ok();
-               
             }
             return BadRequest(new
             {
                 status = HttpStatusCode.BadRequest,
                 message = "Brand tapilmadi"
             });
-
         }
         [HttpGet]
         public async Task<ActionResult<GetBrandDto>> GetBrandById(Guid id)
@@ -68,14 +64,12 @@ namespace WebApiAdvance.Controllers
             {
                 return Ok(_mapper.Map<GetBrandDto>(brand));
             }
-
             return BadRequest(new
             {
                 status = HttpStatusCode.BadRequest,
                 message = "Brand tapilmadi"
             });
         }
-
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(Guid id)
         {
@@ -85,7 +79,6 @@ namespace WebApiAdvance.Controllers
             {
                 return NotFound();
             }
-
             _context.Brands.Remove(brand);
             await _context.SaveChangesAsync();
             return NoContent();
