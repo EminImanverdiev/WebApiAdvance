@@ -40,3 +40,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+
+
+//jwt json web token registr,login

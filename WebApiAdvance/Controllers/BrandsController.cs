@@ -24,15 +24,14 @@ namespace WebApiAdvance.Controllers
         [HttpGet]
         public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands()
         {
-            var result = await _context.Brands.Select(b => new GetBrandDto
-            {
-                Name = b.Name
-            }).ToListAsync();
-           
+            var brands = await _context.Brands.ToListAsync();
+
+            var result = _mapper.Map<List<GetBrandDto>>(brands);
+
             return StatusCode((int)HttpStatusCode.OK, result);
         }
+
         [HttpPost]
-        
         public async Task<IActionResult> CreateBrand(CreateBrandDto dto)
         {
             var brand = _mapper.Map<Brand>(dto);
@@ -46,10 +45,9 @@ namespace WebApiAdvance.Controllers
             var brand = await _context.Brands.FirstOrDefaultAsync(b=>b.Id==id);
             if (brand != null)
             {
-                brand.Name = dto.Name;
-                brand.Description = dto.Description;
+                brand.Name = dto.Name == null ? brand.Name : dto.Name;
+                brand.Description = dto.Description == null ? brand.Description : dto.Description;
                 brand.UpdatedAt = DateTime.UtcNow;
-                _context.Brands.Update(brand);
                 await _context.SaveChangesAsync();
                 return Ok();
                
@@ -65,14 +63,12 @@ namespace WebApiAdvance.Controllers
         public async Task<ActionResult<GetBrandDto>> GetBrandById(Guid id)
         {
             var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+
             if (brand != null)
             {
-                GetBrandDto dto = new GetBrandDto()
-                {
-                    Name = brand.Name
-                };
-                return Ok(dto);
+                return Ok(_mapper.Map<GetBrandDto>(brand));
             }
+
             return BadRequest(new
             {
                 status = HttpStatusCode.BadRequest,
@@ -80,7 +76,20 @@ namespace WebApiAdvance.Controllers
             });
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBrand(Guid id)
+        {
+           var brand = await _context.Brands.FirstOrDefaultAsync(b=> b.Id == id);
+           
+            if(brand == null)
+            {
+                return NotFound();
+            }
 
+            _context.Brands.Remove(brand);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
     }
 }

@@ -10,8 +10,19 @@ namespace WebApiAdvance.DAL.Configurations
         public void Configure(EntityTypeBuilder<Product> builder)
         {
 
-            builder.Property(b => b.Price)
+            builder.Property(p => p.Price)
+
              .HasDefaultValue(0);
+
+            builder.Property(p => p.Description)
+             .HasMaxLength(500)
+             .IsRequired(false);
+
+            builder.Property(p => p.Name)
+             .HasMaxLength(100)
+             .IsRequired();
+
+
         }
     }
 }
