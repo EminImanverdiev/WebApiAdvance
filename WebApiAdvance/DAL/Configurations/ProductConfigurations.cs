@@ -11,13 +11,12 @@ namespace WebApiAdvance.DAL.Configurations
         {
 
             builder.Property(p => p.Price)
-
              .HasDefaultValue(0);
-
+            
             builder.Property(p => p.Description)
              .HasMaxLength(500)
              .IsRequired(false);
-
+            
             builder.Property(p => p.Name)
              .HasMaxLength(100)
              .IsRequired();

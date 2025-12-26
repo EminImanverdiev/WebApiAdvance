@@ -6,11 +6,9 @@ namespace WebApiAdvance.Profiles
 {
     public class ProductProfiles : Profile
     {
-
         public ProductProfiles()
         {
             CreateMap<CreateProductDto, Product>();
         }
-
     }
 }
