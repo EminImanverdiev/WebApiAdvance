@@ -1,4 +1,4 @@
-﻿namespace WebApiAdvance.Entities.DTOs
+﻿namespace WebApiAdvance.Entities.DTOs.Auth
 {
     public class RegisterDto
     {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using WebApiAdvance.Entities.Auth;
-using WebApiAdvance.Entities.DTOs;
+using WebApiAdvance.Entities.DTOs.Auth;
 
 namespace WebApiAdvance.Profiles
 {

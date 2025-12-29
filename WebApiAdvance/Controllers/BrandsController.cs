@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ namespace WebApiAdvance.Controllers
             _mapper = mapper;
         }
         [HttpGet]
+        [Authorize(Roles ="Admin,User")]
         public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands()
         {
             var brands = await _context.Brands.ToListAsync();

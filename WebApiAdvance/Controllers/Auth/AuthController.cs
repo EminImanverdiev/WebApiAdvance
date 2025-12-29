@@ -2,8 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using WebApiAdvance.Entities.Auth;
-using WebApiAdvance.Entities.DTOs;
+using WebApiAdvance.Entities.DTOs.Auth;
 
 namespace WebApiAdvance.Controllers.Auth
 {
@@ -14,12 +18,16 @@ namespace WebApiAdvance.Controllers.Auth
         private readonly UserManager<AppUser<Guid>> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         IMapper _mapper;
+        private readonly IConfiguration _config;
+        private readonly TokenOption _tokenOption;
 
-        public AuthController(UserManager<AppUser<Guid>> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper)
+        public AuthController(UserManager<AppUser<Guid>> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, IConfiguration config)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _mapper = mapper;
+            _config = config;
+            _tokenOption=_config.GetSection("TokenOptions").Get<TokenOption>();
         }
 
         [HttpPost]
@@ -54,5 +62,47 @@ namespace WebApiAdvance.Controllers.Auth
                 Code = 200
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginDto login)
+        {
+            AppUser<Guid> user= await _userManager.FindByNameAsync(login.UserName);
+            if(user is null)
+            {
+                return NotFound();
+            }
+            bool isValidPassword= await _userManager.CheckPasswordAsync(user, login.Password);
+            if (!isValidPassword)
+            {
+                return Unauthorized();
+            }
+            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenOption.SecurityKey));
+            SigningCredentials signingCredentials = new SigningCredentials(securityKey,SecurityAlgorithms.HmacSha512Signature);
+            JwtHeader header = new JwtHeader(signingCredentials);
+
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Name,user.UserName),
+                new Claim(ClaimTypes.Email,user.Email),
+                new Claim("FullName",user.Email)
+            };
+            foreach (var userRole in await _userManager.GetRolesAsync(user))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            JwtPayload payload = new JwtPayload(audience:_tokenOption.Audience,issuer:_tokenOption.Issuer,claims:claims,expires:DateTime.UtcNow.AddMinutes(_tokenOption.AccessTokenExpiration),notBefore:DateTime.UtcNow);
+            JwtSecurityToken token = new JwtSecurityToken(header,payload);
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            string jwt= tokenHandler.WriteToken(token);
+            return Ok(new
+            {
+                Token= jwt,
+                StatusCode=200,
+                Expires=_tokenOption.AccessTokenExpiration
+            });
+        }
+    
     }
 }
