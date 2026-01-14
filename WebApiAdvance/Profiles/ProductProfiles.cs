@@ -9,6 +9,11 @@ namespace WebApiAdvance.Profiles
         public ProductProfiles()
         {
             CreateMap<CreateProductDto, Product>();
+            CreateMap<GetProdcutDto, Product>().ReverseMap().ForMember(opt=>opt.BrandName,opt=>opt.MapFrom(p=>p.Brand.Name));
+
+
+
+
         }
     }
 }

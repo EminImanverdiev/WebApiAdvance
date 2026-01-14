@@ -7,9 +7,7 @@ namespace WebApiAdvance.Entities
 
         public string Description { get; set; }
 
-       public decimal TotalPrice { get; set; }
-
-
+        public decimal TotalPrice { get; set; }
         public int Quantity { get; set; }
 
         public Guid OrderId { get; set; }

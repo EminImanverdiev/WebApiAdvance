@@ -14,7 +14,6 @@ namespace WebApiAdvance.Validators.Brands
                 .MinimumLength(3).WithMessage("Ad en azi 3 simvoldan ibaret olmalidir")
                 .MaximumLength(30)
                 .Must(StartWithA).WithMessage("Ad A herfi ile baslamalidir");
-
         }
         public bool StartWithA(string name)
         {

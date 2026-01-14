@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApiAdvance.DAL.EFCore;
 using WebApiAdvance.Entities;
 using WebApiAdvance.Entities.DTOs.Products;
@@ -32,5 +33,13 @@ namespace WebApiAdvance.Controllers
             return Ok(newProduct);
 
         }
+        [HttpGet]
+
+        public async Task<IActionResult> GetAllProducts()
+        {
+            var products = await _context.Products.Include(p=>p.Brand).ToListAsync();
+            var result = _mapper.Map<List<GetProdcutDto>>(products);
+            return Ok(result);
+        }   
     }
 }

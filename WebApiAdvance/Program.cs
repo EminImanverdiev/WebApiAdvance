@@ -1,72 +1,54 @@
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
-using System.Text;
-using WebApiAdvance.DAL.EFCore;
-using WebApiAdvance.Entities.Auth;
-using WebApiAdvance.Profiles;
-
+using WebApiAdvance;
+using Microsoft.OpenApi.Models; 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 
-
-builder.Services.AddFluentValidationAutoValidation().
-                 AddFluentValidationClientsideAdapters();
-
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApiDbContext>(opt =>
+builder.Services.AddConfigurationService(builder.Configuration);
+builder.Services.AddSwaggerGen(option =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-});
-builder.Services.AddAutoMapper(typeof(BrandProfiles));
-builder.Services.AddIdentity<AppUser<Guid>,IdentityRole>()
-    .AddEntityFrameworkStores<ApiDbContext>()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddAuthentication(opt =>
-{
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(opt =>
-{
-    var tokenOption = builder.Configuration.GetSection("TokenOptions").Get<TokenOption>();
-    opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidIssuer = tokenOption.Issuer,
-        ValidAudience = tokenOption.Audience,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOption.SecurityKey)),
-        ClockSkew = TimeSpan.Zero
-    };
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
 });
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapGet("/", context =>
 {
-    app.MapOpenApi();
-}
+    context.Response.Redirect("/swagger/index.html");
+    return Task.CompletedTask;
+});
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
+
+
+
+
+

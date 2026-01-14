@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using WebApiAdvance.DAL.EFCore;
+using WebApiAdvance.DAL.Repositories.Abstract;
+using WebApiAdvance.DAL.UnitOfWork.Abstract;
 using WebApiAdvance.Entities;
 using WebApiAdvance.Entities.DTOs.Brands;
 
@@ -14,18 +16,19 @@ namespace WebApiAdvance.Controllers
     [ApiController]
     public class BrandsController : ControllerBase
     {
-        private readonly ApiDbContext _context;
         IMapper _mapper;
-        public BrandsController(ApiDbContext context, IMapper mapper)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public BrandsController(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _context = context;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
         [HttpGet]
-        [Authorize(Roles ="Admin,User")]
-        public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands()
+        [Authorize (Roles ="User")]
+        public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands(int page=1,int size=15)
         {
-            var brands = await _context.Brands.ToListAsync();
+            var brands = await _unitOfWork.BrandRepository.GetAllPaginatedAsync(page, size);
 
             var result = _mapper.Map<List<GetBrandDto>>(brands);
 
@@ -35,22 +38,23 @@ namespace WebApiAdvance.Controllers
         public async Task<IActionResult> CreateBrand(CreateBrandDto dto)
         {
             var brand = _mapper.Map<Brand>(dto);
-            await _context.Brands.AddAsync(brand);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.BrandRepository.AddAsync(brand);
+            await _unitOfWork.SaveAsync();
             return Ok();
         }
         [HttpPut]
         public async Task<IActionResult> UpdateBrand(Guid id,UpdateBrandDto dto)
         {
-            var brand = await _context.Brands.FirstOrDefaultAsync(b=>b.Id==id);
+            var brand = await _unitOfWork.BrandRepository.Get(b=>b.Id==id);
             if (brand != null)
             {
                 brand.Name = dto.Name == null ? brand.Name : dto.Name;
                 brand.Description = dto.Description == null ? brand.Description : dto.Description;
                 brand.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await _unitOfWork.SaveAsync();
                 return Ok();
             }
+
             return BadRequest(new
             {
                 status = HttpStatusCode.BadRequest,
@@ -60,7 +64,7 @@ namespace WebApiAdvance.Controllers
         [HttpGet]
         public async Task<ActionResult<GetBrandDto>> GetBrandById(Guid id)
         {
-            var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+            var brand = await _unitOfWork.BrandRepository.Get(b => b.Id == id);
 
             if (brand != null)
             {
@@ -75,14 +79,14 @@ namespace WebApiAdvance.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(Guid id)
         {
-           var brand = await _context.Brands.FirstOrDefaultAsync(b=> b.Id == id);
+           var brand = await _unitOfWork.BrandRepository.Get(b=> b.Id == id);
            
             if(brand == null)
             {
                 return NotFound();
             }
-            _context.Brands.Remove(brand);
-            await _context.SaveChangesAsync();
+            _unitOfWork.BrandRepository.Delete(brand.Id);
+            await _unitOfWork.SaveAsync();
             return NoContent();
         }
 
