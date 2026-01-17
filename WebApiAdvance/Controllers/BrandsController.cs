@@ -25,7 +25,7 @@ namespace WebApiAdvance.Controllers
             _unitOfWork = unitOfWork;
         }
         [HttpGet]
-        [Authorize (Roles ="User")]
+        [Authorize (Roles ="Admin,User")]
         public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands(int page=1,int size=15)
         {
             var brands = await _unitOfWork.BrandRepository.GetAllPaginatedAsync(page, size);
@@ -35,6 +35,8 @@ namespace WebApiAdvance.Controllers
             return StatusCode((int)HttpStatusCode.OK, result);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> CreateBrand(CreateBrandDto dto)
         {
             var brand = _mapper.Map<Brand>(dto);

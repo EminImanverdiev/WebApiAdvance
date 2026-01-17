@@ -45,9 +45,9 @@ namespace WebApiAdvance.Controllers.Auth
             
             }
 
-               await _roleManager.CreateAsync(new IdentityRole("User"));
+               await _roleManager.CreateAsync(new IdentityRole("Admin"));
 
-            var resultRole = await _userManager.AddToRoleAsync(user, "User");
+            var resultRole = await _userManager.AddToRoleAsync(user, "Admin");
             if (!resultRole.Succeeded)
             {
                 return BadRequest(new {
